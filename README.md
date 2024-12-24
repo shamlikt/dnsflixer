@@ -1,6 +1,8 @@
-![DNSFlixer Logo](./static/logo.png)
+<img src="./static/logo.png" alt="DNSFlixer Logo" width="300">
 
-# DNSFlixer
+
+
+# DNSFlixer: [dnsflixer.fun](https://dnsflixer.fun/)
 DNSFlixer is a Go app that lets you upload files using HTTP and download them in chunks through DNS queries
 
 ## What's in the Box?
@@ -126,12 +128,4 @@ Feel free to:
 ## License
 
 MIT License. Do whatever you want with it (just give credit where it’s due).
-
-## Made By
-
-Shamlik Thondikkodan
-
----
-
-Found a bug? Got an idea? Open an issue or shoot a message on the [GitHub repo](https://github.com/shamlikt/dnsflixer).
 

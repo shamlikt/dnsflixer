@@ -3,9 +3,9 @@ package dns
 import (
 	"fmt"
 	"github.com/miekg/dns"
+	"io"
 	"log"
 	"os"
-	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -13,24 +13,34 @@ import (
 
 var queryRegex = regexp.MustCompile(`^[a-zA-Z0-9]+:\d+:\d+$`)
 
-func StartServer(port string, filePath string) error {
+func StartServer(port string, filePath string,  logConnection func(serverType, clientAddr, query string)) error {
 	server := &dns.Server{
 		Addr: ":" + port,
 		Net:  "udp",
 	}
 	dns.HandleFunc(".", func(w dns.ResponseWriter, r *dns.Msg) {
-		handleDNSRequest(w, r, filePath)
+		clientIP := w.RemoteAddr().String()
+		for _, q := range r.Question {
+			logConnection("DNS", clientIP, q.Name)
+			handleDNSRequest(w, r, filePath)
+		}
 	})
+	log.Printf("DNS server listening on port %s...", port)
 	return server.ListenAndServe()
+	
 }
 
 func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg, filePath string) {
+	clientIP := w.RemoteAddr().String() // Get client's IP address
+	log.Printf("Received DNS query from %s", clientIP)
+
 	for _, q := range r.Question {
-		log.Printf("Received query for: %s", q.Name)
+		log.Printf("Query from %s for: %s", clientIP, q.Name)
 
 		trimmedName := strings.TrimSuffix(q.Name, ".")
 		if !queryRegex.MatchString(trimmedName) {
 			sendDNSError(w, r, q.Name, "Invalid query format")
+			log.Printf("Invalid query format from %s for: %s", clientIP, q.Name)
 			return
 		}
 
@@ -42,6 +52,7 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg, filePath string) {
 		file, err := os.Open(fmt.Sprintf("%s/%s.b64", filePath, fileHash))
 		if err != nil {
 			sendDNSError(w, r, q.Name, "File not found")
+			log.Printf("File not found for query %s from %s", q.Name, clientIP)
 			return
 		}
 		defer file.Close()
@@ -56,6 +67,8 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg, filePath string) {
 		if bytesRead < size {
 			responseText += "$"
 		}
+
+		log.Printf("Query response for %s from %s: %s", q.Name, clientIP, responseText)
 
 		response := new(dns.Msg)
 		response.SetReply(r)
@@ -75,7 +88,9 @@ func handleDNSRequest(w dns.ResponseWriter, r *dns.Msg, filePath string) {
 }
 
 func sendDNSError(w dns.ResponseWriter, r *dns.Msg, name, message string) {
-	log.Printf("Error for query %s: %s", name, message)
+	clientIP := w.RemoteAddr().String() // Get client's IP address
+	log.Printf("Error for query %s from %s: %s", name, clientIP, message)
+
 	response := new(dns.Msg)
 	response.SetReply(r)
 	response.Authoritative = true

@@ -1,9 +1,5 @@
-# Directory where the files are stored
 file_path = "files"
-
-# Port for the DNS server
-dns_port = "53"
-
-# Port for the HTTP server
+dns_port = "5354"
 http_port = "8081"
+log_file = "server.log"
 

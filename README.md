@@ -1,3 +1,5 @@
+![DNSFlixer Logo](./static/logo.png)
+
 # DNSFlixer
 DNSFlixer is a Go app that lets you upload files using HTTP and download them in chunks through DNS queries
 

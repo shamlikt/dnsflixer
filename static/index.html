@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNS Flixer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: rgb(249, 250, 251);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 64rem;
+            margin: 0 auto;
+            padding: 3rem 1rem;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 3.75rem;
+            font-weight: bold;
+            margin-bottom: 2rem;
+        }
+
+        .logo-dns { color: #3B82F6; }
+        .logo-toys { color: #F59E0B; }
+
+        .github-link {
+            color: #3B82F6;
+            text-decoration: none;
+            margin-bottom: 3rem;
+            display: inline-block;
+        }
+
+        .github-link:hover {
+            color: #2563EB;
+        }
+
+        .title {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        .description {
+            color: #4B5563;
+            max-width: 42rem;
+            margin: 0 auto 3rem;
+        }
+
+        .upload-container {
+            max-width: 36rem;
+            margin: 0 auto;
+            padding: 2rem;
+            border: 2px dashed #D1D5DB;
+            border-radius: 0.5rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .upload-container.dragover {
+            border-color: #3B82F6;
+            background-color: #EFF6FF;
+        }
+
+        .upload-container.success {
+            background-color: #F0FDF4;
+            border-color: #22C55E;
+        }
+
+        .upload-container.error {
+            border-color: #DC2626;
+            background-color: #FEF2F2;
+        }
+
+        .upload-container.uploading {
+            border-color: #3B82F6;
+            background-color: #EFF6FF;
+        }
+
+        .upload-icon {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+            color: #9CA3AF;
+        }
+
+        .script-section {
+            margin-top: 3rem;
+            text-align: left;
+            max-width: 42rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .script-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .script-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #111827;
+        }
+
+        .copy-button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #3B82F6;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .copy-button:hover {
+            color: #2563EB;
+        }
+
+        .script-container {
+            background: white;
+            border-radius: 0.5rem;
+            border: 1px solid #E5E7EB;
+            overflow: hidden;
+        }
+
+        .script-content {
+            padding: 1rem;
+            margin: 0;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            overflow-x: auto;
+        }
+
+        #file-upload {
+            display: none;
+        }
+
+        .upload-text {
+            color: #374151;
+            font-weight: 500;
+        }
+
+        .upload-subtext {
+            color: #6B7280;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .success-text {
+            color: #059669;
+        }
+
+        .error-text {
+            color: #DC2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo">
+          <img src="logo.png" alt="DNS Flixer Logo" style="max-width: 300px; height: auto;">          
+        </div>
+        <a href="https://github.com/shamlikt/dnsflixer" class="github-link">GitHub</a>
+        <h1 class="title">Simple File Server Over DNS</h1>
+        <p class="description">
+          A DNS server offering simple file download via DNS protocol and upload via HTTP
+        </p>
+
+        <!-- Upload Area -->
+        <div class="upload-container" id="upload-area">
+            <input type="file" id="file-upload">
+            <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="upload-text">Drag and drop your file here, or click to select</p>
+            <p class="upload-subtext">Supports all file types</p>
+        </div>
+
+        <!-- Script Section -->
+        <div class="script-section">
+            <div class="script-header">
+                <h3 class="script-title">Run below script</h3>
+                <button class="copy-button" id="copy-button">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                    </svg>
+                    <span>Copy</span>
+                </button>
+            </div>
+            <div class="script-container">
+              <pre class="script-content"><code class="language-bash">#!/bin/bash
+                  
+SERVER="dnsfixer.fun"
+PORT="5354"
+BASE_QUERY="ba55a55f045cb6fea45f2cc5d27a4845"
+OUTPUT_FILE="_tmp"
+for ((i = 0; ; i++)); do
+    output=$(dig @"$SERVER" -p "$PORT" "$BASE_QUERY:$i:100" TXT +short 2>/dev/null | tr -d '"')
+    [[ -n "$output" ]] && echo "$output" >> "$OUTPUT_FILE"
+    echo $output
+    [[ "$output" == *\$* ]] && break
+done
+sed '$ s/\$$//' "$OUTPUT_FILE" | base64 --decode > "$BASE_QUERY"
+rm "$OUTPUT_FILE" && echo "Done"</code></pre>
+            </div>
+            <p class="upload-subtext" id="upload-message">Upload a file to get your unique BASE_QUERY hash.</p>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const uploadArea = $('#upload-area');
+            const fileInput = $('#file-upload');
+            const uploadMessage = $('#upload-message');
+            const scriptContent = $('.script-content code');
+            const copyButton = $('#copy-button');
+            let originalScript = scriptContent.text();
+
+            // Handle drag and drop events
+            uploadArea.on('dragenter dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('dragover');
+            });
+
+            uploadArea.on('dragleave drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('dragover');
+            });
+
+            // Handle file drop
+            uploadArea.on('drop', function(e) {
+                const file = e.originalEvent.dataTransfer.files[0];
+                handleFile(file);
+            });
+
+            // Handle file selection
+            let isFileInputTriggered = false;
+            uploadArea.on('click', function() {
+                if (isFileInputTriggered) return;
+                isFileInputTriggered = true;
+                fileInput.trigger('click');
+                setTimeout(() => { isFileInputTriggered = false; }, 500); // Debounce to prevent multiple triggers
+            });
+
+            fileInput.on('change', function() {
+                const file = this.files[0];
+                handleFile(file);
+            });
+
+            // Handle file upload
+            function handleFile(file) {
+                if (!file) return;
+
+                uploadArea.removeClass('error success')
+                    .addClass('uploading');
+                uploadArea.find('.upload-text')
+                    .text('Uploading...')
+                    .removeClass('error-text');
+                uploadArea.find('.upload-subtext').hide();
+
+                // Simulate API call
+                const formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/upload',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        uploadArea.removeClass('uploading').addClass('success');
+                        uploadArea.find('.upload-text')
+                            .text(`File uploaded: ${file.name}`)
+                            .removeClass('error-text');
+                        
+                        // Update script with new hash
+                        const newScript = originalScript.replace(
+                            /BASE_QUERY="[^"]*"/,
+                            `BASE_QUERY="${response.file_id}"`
+                        );
+                        scriptContent.text(newScript);
+                        Prism.highlightElement(scriptContent[0]);
+                        uploadMessage.hide();
+                    },
+                    error: function() {
+                        uploadArea.removeClass('uploading success').addClass('error');
+                        uploadArea.find('.upload-text')
+                            .text('Upload failed. Please try again.')
+                            .addClass('error-text');
+                        uploadArea.find('.upload-subtext').show();
+                    }
+                });
+            }
+
+            // Handle copy to clipboard
+            copyButton.on('click', function() {
+                const textToCopy = scriptContent.text();
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalText = copyButton.find('span').text();
+                    copyButton.find('span').text('Copied!');
+                    setTimeout(() => {
+                        copyButton.find('span').text(originalText);
+                    }, 2000);
+                });
+            });
+
+            // Initialize Prism.js syntax highlighting
+            Prism.highlightAll();
+        });
+    </script>
+</body>
+</html>

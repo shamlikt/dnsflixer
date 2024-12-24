@@ -1,0 +1,9 @@
+# Directory where the files are stored
+file_path = "files"
+
+# Port for the DNS server
+dns_port = "53"
+
+# Port for the HTTP server
+http_port = "8081"
+

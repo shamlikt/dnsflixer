@@ -219,14 +219,11 @@
                 <div class="script-container">
                     <pre class="script-content"><code class="language-bash">#!/bin/bash
                   
-SERVER="dnsflixer.fun"
-PORT="5354"
 BASE_QUERY="ba55a55f045cb6fea45f2cc5d27a4845"
 OUTPUT_FILE="_tmp"
 for ((i = 0; ; i++)); do
-    output=$(dig @"$SERVER" -p "$PORT" "$BASE_QUERY:$i:100" TXT +short 2>/dev/null | tr -d '"')
+    output=$(dig @dnsflixer.fun  "$BASE_QUERY:$i:100" TXT +short 2>/dev/null | tr -d '"')
     [[ -n "$output" ]] && echo "$output" >> "$OUTPUT_FILE"
-    echo $output
     [[ "$output" == *\$* ]] && break
 done
 sed '$ s/\$$//' "$OUTPUT_FILE" | base64 --decode > "$BASE_QUERY"
